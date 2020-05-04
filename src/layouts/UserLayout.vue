@@ -39,6 +39,19 @@
   </div>
 </template>
 
+<script>
+import { Session } from "@/util";
+import router from "@/router";
+
+export default {
+  beforeCreate() {
+    if (Session.getToken()) {
+      router.push("/");
+    }
+  },
+};
+</script>
+
 <style lang="less">
 #comment-user-layout {
   width: 100%;

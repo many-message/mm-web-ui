@@ -50,16 +50,24 @@
 </template>
 
 <script>
+import { createNamespacedHelpers } from "vuex";
+
+// vuex 的命名空间
+const { mapActions } = createNamespacedHelpers("user");
+
 export default {
   beforeCreate() {
     this.form = this.$form.createForm(this, { name: "user_login_form" });
   },
   methods: {
+    ...mapActions({
+      login: "login",
+    }),
     handleSubmit(e) {
       e.preventDefault();
       this.form.validateFields((err, values) => {
         if (!err) {
-          console.log("Received values of form: ", values);
+          this.login(values);
         }
       });
     },

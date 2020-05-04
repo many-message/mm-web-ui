@@ -2,7 +2,6 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
-import Home from "../views/Home.vue";
 
 Vue.use(VueRouter);
 
@@ -10,7 +9,7 @@ const routes = [
   {
     path: "/user",
     component: () =>
-      import(/* webpackChunkName: "layout" */ "../layouts/UserLayout.vue"),
+      import(/* webpackChunkName: "userLayout" */ "../layouts/UserLayout.vue"),
     children: [
       {
         path: "/user/login",
@@ -27,9 +26,61 @@ const routes = [
     ],
   },
   {
-    path: "/",
+    path: "/home",
     name: "Home",
-    component: Home,
+    component: () =>
+      import(/* webpackChunkName: "homeLayout" */ "../layouts/HomeLayout.vue"),
+    children: [
+      {
+        path: "/home/notice",
+        name: "Notice",
+        component: () =>
+          import(/* webpackChunkName: "home" */ "../views/notice/Notice.vue"),
+      },
+      {
+        path: "/home/message",
+        name: "Message",
+        component: () =>
+          import(/* webpackChunkName: "home" */ "../views/message/Message.vue"),
+      },
+      {
+        path: "/home/cantact",
+        name: "Cantact",
+        component: () =>
+          import(
+            /* webpackChunkName: "cantact" */ "../views/cantact/Cantact.vue"
+          ),
+        children: [
+          {
+            path: "/home/cantact/friend/:friendId",
+            name: "CantactFriend",
+            component: () =>
+              import(
+                /* webpackChunkName: "cantact" */ "../views/cantact/Friend.vue"
+              ),
+            props: true,
+          },
+          {
+            path: "/home/cantact/group",
+            name: "CantactGroup",
+            component: () =>
+              import(
+                /* webpackChunkName: "cantact" */ "../views/cantact/Group.vue"
+              ),
+          },
+        ],
+      },
+      {
+        path: "/home/find",
+        name: "Find",
+        component: () =>
+          import(/* webpackChunkName: "home" */ "../views/find/Find.vue"),
+      },
+    ],
+  },
+  {
+    path: "/",
+    redirect: "/home/message",
   },
   {
     path: "*",

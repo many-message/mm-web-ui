@@ -21,6 +21,12 @@ import {
   Modal,
   Result,
   Descriptions,
+  Select,
+  Divider,
+  Drawer,
+  Table,
+  Card,
+  Tag,
 } from "ant-design-vue";
 
 Vue.use(Layout);
@@ -40,6 +46,12 @@ Vue.use(Dropdown);
 Vue.use(Modal);
 Vue.use(Result);
 Vue.use(Descriptions);
+Vue.use(Select);
+Vue.use(Divider);
+Vue.use(Drawer);
+Vue.use(Table);
+Vue.use(Card);
+Vue.use(Tag);
 
 Vue.prototype.$message = message;
 

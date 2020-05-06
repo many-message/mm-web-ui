@@ -67,6 +67,37 @@ const actions = {
       router.push("/user/login");
     });
   },
+  /**
+   * 修改用户信息
+   * @param {*} param0
+   * @param { updateInfo, success, error } payload
+   */
+  updateUserInfo({ commit }, payload) {
+    Request.put("/users", payload.updateInfo)
+      .then(data => {
+        commit("updateUserInfo", data);
+        message.success("修改成功！");
+        payload.success();
+      })
+      .catch(() => payload.error());
+  },
+  /**
+   * 修改密码
+   * @param content
+   * @param { pwdInfo, success, error } payload
+   */
+  updatePwd(content, payload) {
+    const { oldPwd, newPwd } = payload.pwdInfo;
+    Request.patch("/users/passwords", {
+      oldPwd: Encrypt.rsaEncrypt(oldPwd),
+      newPwd: Encrypt.rsaEncrypt(newPwd),
+    })
+      .then(() => {
+        message.success("修改成功！");
+        payload.success();
+      })
+      .catch(() => payload.error());
+  },
 };
 
 const mutations = {

@@ -61,12 +61,13 @@ const routes = [
             props: true,
           },
           {
-            path: "/home/cantact/group",
+            path: "/home/cantact/group/:groupId",
             name: "CantactGroup",
             component: () =>
               import(
                 /* webpackChunkName: "cantact" */ "../views/cantact/Group.vue"
               ),
+            props: true,
           },
         ],
       },
@@ -74,7 +75,23 @@ const routes = [
         path: "/home/find",
         name: "Find",
         component: () =>
-          import(/* webpackChunkName: "home" */ "../views/find/Find.vue"),
+          import(/* webpackChunkName: "find" */ "../views/find/Find.vue"),
+        children: [
+          {
+            path: "/home/find/user/:userId",
+            name: "FindUser",
+            component: () =>
+              import(/* webpackChunkName: "find" */ "../views/find/User.vue"),
+            props: true,
+          },
+          {
+            path: "/home/find/group/:groupId",
+            name: "FindGroup",
+            component: () =>
+              import(/* webpackChunkName: "find" */ "../views/find/Group.vue"),
+            props: true,
+          },
+        ],
       },
     ],
   },

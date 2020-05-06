@@ -17,7 +17,12 @@
             <a-collapse-panel
               v-for="(friendGroup, index) in friendGroups"
               :key="friendGroup.friendGroupId"
-              :header="friendGroup.friendGroupName"
+              :header="
+                friendGroup.friendGroupName +
+                  '(' +
+                  friendGroup.friends.length +
+                  ')'
+              "
               :style="customStyle"
             >
               <a-list item-layout="horizontal">
@@ -66,13 +71,20 @@
             <template #expandIcon="props">
               <a-icon type="caret-right" :rotate="props.isActive ? 90 : 0" />
             </template>
-            <a-collapse-panel key="1" header="我的群聊" :style="customStyle">
+            <a-collapse-panel
+              key="1"
+              :header="'我的群聊(' + myGroups.length + ')'"
+              :style="customStyle"
+            >
               <a-list item-layout="horizontal">
                 <a-list-item v-for="group in myGroups" :key="group.groupId">
                   <a-list-item-meta :description="group.groupNum">
-                    <a slot="title" href="https://www.antdv.com/">{{
-                      group.groupName
-                    }}</a>
+                    <router-link
+                      slot="title"
+                      :to="'/home/cantact/group/' + group.groupId"
+                    >
+                      {{ group.groupName }}
+                    </router-link>
                     <a-avatar slot="avatar" class="photo">{{
                       sliceNickname(group.groupName)
                     }}</a-avatar>
@@ -83,15 +95,18 @@
             </a-collapse-panel>
             <a-collapse-panel
               key="2"
-              header="我加入的群聊"
+              :header="'我加入的群聊(' + joinGroups.length + ')'"
               :style="customStyle"
             >
               <a-list item-layout="horizontal">
                 <a-list-item v-for="group in joinGroups" :key="group.groupId">
                   <a-list-item-meta :description="group.groupNum">
-                    <a slot="title" href="https://www.antdv.com/">{{
-                      group.groupName
-                    }}</a>
+                    <router-link
+                      slot="title"
+                      :to="'/home/cantact/group/' + group.groupId"
+                    >
+                      {{ group.groupName }}
+                    </router-link>
                     <a-avatar slot="avatar" class="photo">{{
                       sliceNickname(group.groupName)
                     }}</a-avatar>

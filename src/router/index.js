@@ -2,6 +2,7 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
+import Result from "../components/Result";
 
 Vue.use(VueRouter);
 
@@ -68,6 +69,11 @@ const routes = [
                 /* webpackChunkName: "cantact" */ "../views/cantact/Group.vue"
               ),
             props: true,
+          },
+          {
+            path: "/home/cantact/success",
+            name: "CantactSuccess",
+            component: Result,
           },
         ],
       },

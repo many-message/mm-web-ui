@@ -65,6 +65,18 @@ const actions = {
       })
       .catch(() => payload.error());
   },
+  /**
+   * 删除好友
+   * @param {*} param0
+   * @param {friendId, success} payload
+   */
+  deleteFriend({ commit }, payload) {
+    Request.delete(`/friends/${payload.friendId}`).then(data => {
+      commit("cantact/updateFriendGroups", data, { root: true });
+      messageTip.success("删除成功！");
+      payload.success();
+    });
+  },
 };
 
 const mutations = {

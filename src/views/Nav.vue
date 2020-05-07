@@ -4,8 +4,10 @@
     <a-menu theme="dark" mode="inline" :defaultSelectedKeys="[navDefaultKey]">
       <a-menu-item key="1">
         <router-link to="/home/notice">
-          <a-icon type="message" />
-          <span>通知</span>
+          <a-badge dot :offset="[-5, 10]">
+            <a-icon type="notification" />
+            <span>通知</span>
+          </a-badge>
         </router-link>
       </a-menu-item>
       <a-menu-item key="2">
@@ -122,6 +124,7 @@ const pathNavMap = {
   Cantact: "3",
   CantactFriend: "3",
   CantactGroup: "3",
+  CantactSuccess: "3",
   Find: "4",
   FindUser: "4",
   FindGroup: "4",

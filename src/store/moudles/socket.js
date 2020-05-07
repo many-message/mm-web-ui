@@ -6,17 +6,7 @@ const state = {
 
 const getters = {};
 
-const actions = {
-  /**
-   * 接收websocket消息
-   * @param {*} param0
-   * @param {*} payload
-   */
-  webSocketOnMessage({ commit }, payload) {
-    // TODO
-    commit("", payload);
-  },
-};
+const actions = {};
 
 const mutations = {
   /**

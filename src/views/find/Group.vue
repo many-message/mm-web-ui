@@ -24,7 +24,9 @@
       </template>
       <template #extra>
         <a-button v-if="groupInfo.join" type="primary">发送消息</a-button>
-        <a-button v-else type="primary">加入群聊</a-button>
+        <a-button v-else @click="showJoinGroupModal" type="primary">
+          加入群聊
+        </a-button>
       </template>
     </a-result>
     <!-- 加入群聊 -->
@@ -36,17 +38,17 @@
       @cancel="handleJoinGroupCancel"
     >
       <a-input
-        v-model="groupMemberName"
-        @change="handleGroupMemberNameChange"
-        placeholder="请输入群名片"
+        v-model="joinGroupReqMsg"
+        @change="handleJoinGroupReqMsgChange"
+        placeholder="请输入群请求信息"
       />
     </a-modal>
   </div>
 </template>
 
 <script>
-import { createNamespacedHelpers } from "vuex";
-import { sliceNickname } from "@/util";
+import { createNamespacedHelpers, mapMutations } from "vuex";
+import { sliceNickname, REQ_JOIN_GROUP_NOTICE } from "@/util";
 
 const { mapState, mapActions } = createNamespacedHelpers("find");
 
@@ -63,33 +65,56 @@ export default {
     return {
       joinGroupVisible: false,
       joinGroupConfirmLoadding: false,
-      groupMemberName: null,
+      joinGroupReqMsg: null,
     };
   },
   methods: {
-    ...mapActions(["getGroup"]),
+    ...mapActions(["getGroup", "sendJoinGroupReq"]),
+    ...mapMutations("socket", ["sendMsg"]),
     handleGetGroupInfo() {
       this.getGroup(this.groupId);
     },
     sliceName(name) {
       return sliceNickname(name);
     },
+    // 加入群
     showJoinGroupModal() {
-      this.groupMemberName = null;
+      this.joinGroupReqMsg = null;
       this.joinGroupVisible = true;
     },
-    handleGroupMemberNameChange() {
-      if (this.groupMemberName) {
-        this.groupMemberName = this.groupMemberName.trim();
+    handleJoinGroupReqMsgChange() {
+      if (this.joinGroupReqMsg) {
+        this.joinGroupReqMsg = this.joinGroupReqMsg.trim();
       }
     },
     handleJoinGroupOk() {
-      if (!this.groupMemberName) {
-        this.$message.error("请输入群名片！");
+      if (!this.joinGroupReqMsg) {
+        this.$message.error("请输入群请求信息！");
         return;
       }
       this.joinGroupConfirmLoadding = true;
-      // TODO
+      // 发送入群请求
+      this.sendJoinGroupReq({
+        joinGorupInfo: {
+          groupId: this.groupId,
+          reqMsg: this.joinGroupReqMsg,
+        },
+        success: userIds => {
+          this.joinGroupConfirmLoadding = false;
+          this.joinGroupVisible = false;
+          // 同步发送websocket消息
+          this.sendMsg({
+            msgType: REQ_JOIN_GROUP_NOTICE,
+            content: {
+              recvUserIds: userIds,
+            },
+          });
+          this.$message.success("请求已发送！");
+        },
+        error: () => {
+          this.joinGroupConfirmLoadding = false;
+        },
+      });
     },
     handleJoinGroupCancel() {
       this.joinGroupVisible = false;

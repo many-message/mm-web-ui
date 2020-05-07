@@ -21,7 +21,9 @@
       </template>
       <template #extra>
         <a-button v-if="userInfo.friend" type="primary">发送消息</a-button>
-        <a-button v-else type="primary">添加好友</a-button>
+        <a-button v-else @click="showAddFriendModal" type="primary">
+          添加好友
+        </a-button>
       </template>
     </a-result>
     <!-- 添加好友 -->
@@ -32,25 +34,34 @@
       @ok="handleAddFriendOk"
       @cancel="handleAddFriendCancel"
     >
+      <a-select v-model="addFriendGroupId" style="width: 100%">
+        <a-select-option
+          v-for="friendGroup in friendGroups"
+          :key="friendGroup.friendGroupId"
+          :value="friendGroup.friendGroupId"
+        >
+          {{ friendGroup.friendGroupName }}
+        </a-select-option>
+      </a-select>
       <a-input
-        v-model="friendName"
-        @change="handleFriendNameChange"
-        placeholder="请输入备注名"
+        v-model="addFriendReqMsg"
+        @change="handleAddFriendReqMsgChange"
+        placeholder="请输入请求信息"
+        :style="{ marginTop: '20px' }"
       />
     </a-modal>
   </div>
 </template>
 
 <script>
-import { createNamespacedHelpers } from "vuex";
-import { sliceNickname } from "@/util";
-
-const { mapState, mapActions } = createNamespacedHelpers("find");
+import { mapState, mapActions, mapMutations } from "vuex";
+import { sliceNickname, FRIEND_REQ_NOTICE } from "@/util";
 
 export default {
   props: ["userId"],
   computed: {
-    ...mapState(["userInfo"]),
+    ...mapState("find", ["userInfo"]),
+    ...mapState("friend", ["friendGroups"]),
   },
   watch: {
     // 监听路由变化
@@ -60,33 +71,66 @@ export default {
     return {
       addFriendVisible: false,
       addFriendConfirmLoadding: false,
-      friendName: null,
+      addFriendGroupId: null,
+      addFriendReqMsg: null,
     };
   },
   methods: {
-    ...mapActions(["getUser"]),
+    ...mapActions("find", ["getUser", "sendFriendReq"]),
+    ...mapActions("friend", ["getFriendGroups"]),
+    ...mapMutations("socket", ["sendMsg"]),
     handleGetUserInfo() {
       this.getUser(this.userId);
     },
     sliceName(name) {
       return sliceNickname(name);
     },
+    // 添加好友
     showAddFriendModal() {
-      this.friendName = this.userInfo.nickname;
-      this.addFriendVisible = true;
+      this.getFriendGroups(() => {
+        this.addFriendGroupId = null;
+        this.addFriendReqMsg = null;
+        this.addFriendVisible = true;
+      });
     },
-    handleFriendNameChange() {
-      if (this.friendName) {
-        this.friendName = this.friendName.trim();
+    handleAddFriendReqMsgChange() {
+      if (this.addFriendReqMsg) {
+        this.addFriendReqMsg = this.addFriendReqMsg.trim();
       }
     },
     handleAddFriendOk() {
-      if (!this.friendName) {
-        this.$message.error("请输入备注名！");
+      if (!this.addFriendGroupId) {
+        this.$message.error("请选择分组！");
+        return;
+      }
+      if (!this.addFriendReqMsg) {
+        this.$message.error("请输入请求信息！");
         return;
       }
       this.addFriendConfirmLoadding = true;
-      // TODO 发送请求
+      // 发送请求
+      this.sendFriendReq({
+        friendReqInfo: {
+          recvUserId: this.userInfo.userId,
+          friendGroupId: this.addFriendGroupId,
+          reqMsg: this.addFriendReqMsg,
+        },
+        success: () => {
+          this.addFriendConfirmLoadding = false;
+          this.addFriendVisible = false;
+          // websocket同步发送消息
+          this.sendMsg({
+            msgType: FRIEND_REQ_NOTICE,
+            content: {
+              recvUserId: this.userInfo.userId,
+            },
+          });
+          this.$message.success("请求已发送！");
+        },
+        error: () => {
+          this.addFriendConfirmLoadding = false;
+        },
+      });
     },
     handleAddFriendCancel() {
       this.addFriendVisible = false;

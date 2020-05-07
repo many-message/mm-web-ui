@@ -27,6 +27,9 @@ import {
   Table,
   Card,
   Tag,
+  Popconfirm,
+  Transfer,
+  Badge,
 } from "ant-design-vue";
 
 Vue.use(Layout);
@@ -52,6 +55,9 @@ Vue.use(Drawer);
 Vue.use(Table);
 Vue.use(Card);
 Vue.use(Tag);
+Vue.use(Popconfirm);
+Vue.use(Transfer);
+Vue.use(Badge);
 
 Vue.prototype.$message = message;
 

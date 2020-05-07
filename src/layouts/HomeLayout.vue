@@ -50,7 +50,6 @@ export default {
       "initWebSocket",
       "webSocketOnOpen",
       "webSocketOnClose",
-      "webSocketOnMessage",
       "sendMsg",
     ]),
     handleInitWebSocket() {
@@ -68,7 +67,7 @@ export default {
       this.handleInitWebSocket();
     },
     handleWebSocketOnMessage(e) {
-      this.webSocketOnMessage(e.data);
+      console.log(e.data);
     },
     handleWebSocketOnClose() {
       this.webSocketOnClose();

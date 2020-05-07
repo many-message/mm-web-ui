@@ -30,11 +30,30 @@
         >
           编辑群聊
         </a-button>
-        <a-button v-if="groupInfo.myGroupMemberType !== '3'">添加成员</a-button>
-        <a-button v-if="groupInfo.myGroupMemberType === '1'" type="danger">
-          解散群聊
+        <a-button
+          v-if="groupInfo.myGroupMemberType !== '3'"
+          @click="showInviteJoinGroupModal"
+        >
+          添加成员
         </a-button>
-        <a-button v-else type="danger">退出群聊</a-button>
+        <a-popconfirm
+          v-if="groupInfo.myGroupMemberType === '1'"
+          title="您确定要解散群聊吗？"
+          ok-text="非常确定"
+          cancel-text="再想一下"
+          @confirm="handleDeleteGorup"
+        >
+          <a-button type="danger">解散群聊</a-button>
+        </a-popconfirm>
+        <a-popconfirm
+          v-else
+          title="您确定要退出群聊吗？"
+          ok-text="非常确定"
+          cancel-text="再想一下"
+          @confirm="handleLeaveGroup"
+        >
+          <a-button type="danger">退出群聊</a-button>
+        </a-popconfirm>
         <!-- 群成员 -->
         <a-card title="群成员" :style="{ marginTop: '30px' }">
           <a-table
@@ -108,7 +127,13 @@
                   修改备注
                 </a>
                 <a-divider type="vertical" />
-                <a>移除</a>
+                <a
+                  @click="
+                    handleDeleteGroupMember(record.groupMemberId, record.userId)
+                  "
+                >
+                  移除
+                </a>
               </div>
             </span>
             <!-- 群主 -->
@@ -151,7 +176,13 @@
                   变更类型
                 </a>
                 <a-divider type="vertical" />
-                <a>移除</a>
+                <a
+                  @click="
+                    handleDeleteGroupMember(record.groupMemberId, record.userId)
+                  "
+                >
+                  移除
+                </a>
               </div>
             </span>
           </a-table>
@@ -192,14 +223,35 @@
         placeholder="请输入备注名"
       />
     </a-modal>
+    <!-- 邀请好友加入群聊 -->
+    <a-modal
+      title="邀请成员"
+      :visible="inviteJoinGroupVisible"
+      :confirm-loading="inviteJoinGroupConfirmLoadding"
+      @ok="handleInviteJoinGroupOk"
+      @cancel="handleInviteJoinGroupCancel"
+    >
+      <a-transfer
+        :data-source="joinGroupUsers"
+        :target-keys="joinUsers"
+        :titles="['好友', '群聊']"
+        :render="item => item.title"
+        @change="handleChange"
+      />
+    </a-modal>
   </div>
 </template>
 
 <script>
-import { createNamespacedHelpers } from "vuex";
-import { sliceNickname } from "@/util";
+import { createNamespacedHelpers, mapMutations } from "vuex";
+import {
+  sliceNickname,
+  DEL_GROUP_MEMBER_NOTICE,
+  DEL_GROUP_NOTICE,
+  INVITE_JOIN_GROUP_NOTICE,
+} from "@/util";
 
-const { mapState, mapActions } = createNamespacedHelpers("group");
+const { mapState, mapActions, mapGetters } = createNamespacedHelpers("group");
 
 const columns = [
   {
@@ -244,10 +296,15 @@ export default {
       editGroupMemberNameConfirmLoadding: false,
       editGroupMemberId: null,
       editGroupMemberName: null,
+      // 邀请成员
+      inviteJoinGroupVisible: false,
+      inviteJoinGroupConfirmLoadding: false,
+      joinUsers: [],
     };
   },
   computed: {
     ...mapState(["groupInfo"]),
+    ...mapGetters(["userIds", "joinGroupUsers"]),
   },
   watch: {
     // 监听路由变化
@@ -259,7 +316,13 @@ export default {
       "editGroup",
       "updateGroupMemberType",
       "updateGroupMemberName",
+      "deleteGroupMember",
+      "leaveGroup",
+      "deleteGroup",
+      "getInviteJoinGroupUsers",
+      "inviteJoinGroup",
     ]),
+    ...mapMutations("socket", ["sendMsg"]),
     handleGetGroupInfo() {
       this.getGroup(this.groupId);
     },
@@ -350,6 +413,84 @@ export default {
     },
     handleEditGroupMemberNameCancel() {
       this.editGroupMemberNameVisible = false;
+    },
+    // 移除群成员
+    handleDeleteGroupMember(groupMemberId, userId) {
+      this.deleteGroupMember({
+        groupMemberId,
+        success: () => {
+          this.sendMsg({
+            msgType: DEL_GROUP_MEMBER_NOTICE,
+            content: {
+              recvUserId: userId,
+            },
+          });
+        },
+      });
+    },
+    // 退群
+    handleLeaveGroup() {
+      this.leaveGroup({
+        groupId: this.groupId,
+        success: () => {
+          this.$router.push("/home/cantact/success");
+        },
+      });
+    },
+    // 解散群
+    handleDeleteGorup() {
+      this.deleteGroup({
+        groupId: this.groupId,
+        success: () => {
+          this.sendMsg({
+            msgType: DEL_GROUP_NOTICE,
+            content: {
+              recvUserIds: this.userIds,
+            },
+          });
+          this.$router.push("/home/cantact/success");
+        },
+      });
+    },
+    // 邀请成员
+    showInviteJoinGroupModal() {
+      this.getInviteJoinGroupUsers({
+        groupId: this.groupId,
+        success: () => {
+          this.joinUsers = [];
+          this.inviteJoinGroupVisible = true;
+        },
+      });
+    },
+    handleChange(nextTargetKeys) {
+      this.joinUsers = nextTargetKeys;
+    },
+    handleInviteJoinGroupOk() {
+      this.inviteJoinGroupConfirmLoadding = true;
+      // 邀请好友加入群聊
+      this.inviteJoinGroup({
+        inviteJoinInfo: {
+          groupId: this.groupId,
+          inviteUserIds: this.joinUsers,
+        },
+        success: () => {
+          this.inviteJoinGroupConfirmLoadding = false;
+          this.inviteJoinGroupVisible = false;
+          // 同步发送消息
+          this.sendMsg({
+            msgType: INVITE_JOIN_GROUP_NOTICE,
+            content: {
+              inviteUserIds: this.joinUsers,
+            },
+          });
+        },
+        error: () => {
+          this.inviteJoinGroupConfirmLoadding = false;
+        },
+      });
+    },
+    handleInviteJoinGroupCancel() {
+      this.inviteJoinGroupVisible = false;
     },
   },
   mounted() {

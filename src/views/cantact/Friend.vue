@@ -26,7 +26,14 @@
         <a-button type="primary">发送消息</a-button>
         <a-button @click="showMoveFriendGroupModal">移动分组</a-button>
         <a-button @click="showUpdateFriendName">修改备注</a-button>
-        <a-button type="danger">删除好友</a-button>
+        <a-popconfirm
+          title="您确定要与对方解除好友关系吗？"
+          ok-text="非常确定"
+          cancel-text="再想一下"
+          @confirm="handleDeleteFriend"
+        >
+          <a-button type="danger">删除好友</a-button>
+        </a-popconfirm>
       </template>
     </a-result>
     <!-- 修改备注 -->
@@ -65,8 +72,8 @@
 </template>
 
 <script>
-import { createNamespacedHelpers } from "vuex";
-import { sliceNickname } from "@/util";
+import { createNamespacedHelpers, mapMutations } from "vuex";
+import { sliceNickname, DEL_FRIEND_NOTICE } from "@/util";
 
 const { mapState, mapActions } = createNamespacedHelpers("friend");
 
@@ -97,7 +104,9 @@ export default {
       "updateFriendName",
       "getFriendGroups",
       "moveFriendGroup",
+      "deleteFriend",
     ]),
+    ...mapMutations("socket", ["sendMsg"]),
     handleGetFriendInfo() {
       this.getFriend(this.friendId);
     },
@@ -167,6 +176,21 @@ export default {
     },
     handleMoveFriendGroupCancel() {
       this.moveFriendGroupVisible = false;
+    },
+    // 删除好友
+    handleDeleteFriend() {
+      this.deleteFriend({
+        friendId: this.friendInfo.friendId,
+        success: () => {
+          this.sendMsg({
+            msgType: DEL_FRIEND_NOTICE,
+            content: {
+              recvUserId: this.friendInfo.userId,
+            },
+          });
+          this.$router.push("/home/cantact/success");
+        },
+      });
     },
   },
   mounted() {

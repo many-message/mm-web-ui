@@ -46,6 +46,26 @@ const actions = {
   getGroup({ commit }, groupId) {
     Request.get(`/groups/${groupId}`).then(data => commit("updateGroup", data));
   },
+  /**
+   * 发送好友请求
+   * @param {*} param0
+   * @param {friendReqInfo, success, error} payload
+   */
+  sendFriendReq(content, payload) {
+    Request.post("/friend-reqs", payload.friendReqInfo)
+      .then(() => payload.success())
+      .catch(() => payload.error());
+  },
+  /**
+   * 入群请求
+   * @param {*} content
+   * @param {joinGorupInfo, success, error} payload
+   */
+  sendJoinGroupReq(content, payload) {
+    Request.post("/group-join-reqs", payload.joinGorupInfo)
+      .then(data => payload.success(data))
+      .catch(() => payload.error());
+  },
 };
 
 const mutations = {

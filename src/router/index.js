@@ -36,7 +36,41 @@ const routes = [
         path: "/home/notice",
         name: "Notice",
         component: () =>
-          import(/* webpackChunkName: "home" */ "../views/notice/Notice.vue"),
+          import(/* webpackChunkName: "notice" */ "../views/notice/Notice.vue"),
+        children: [
+          {
+            path: "/home/notice/friendReq/:friendReqId",
+            name: "NoticeFriendReq",
+            component: () =>
+              import(
+                /* webpackChunkName: "notice" */ "../views/notice/FriendReq.vue"
+              ),
+            props: true,
+          },
+          {
+            path: "/home/notice/groupJoinReq/:groupJoinReqId",
+            name: "NoticeGroupJoinReq",
+            component: () =>
+              import(
+                /* webpackChunkName: "notice" */ "../views/notice/GroupJoinReq.vue"
+              ),
+            props: true,
+          },
+          {
+            path: "/home/notice/groupJoinInvite/:groupJoinInviteId",
+            name: "NoticeGroupJoinInvite",
+            component: () =>
+              import(
+                /* webpackChunkName: "notice" */ "../views/notice/GroupJoinInvite.vue"
+              ),
+            props: true,
+          },
+          {
+            path: "/home/notice/success",
+            name: "NoticeSuccess",
+            component: Result,
+          },
+        ],
       },
       {
         path: "/home/message",

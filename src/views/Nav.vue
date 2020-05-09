@@ -108,8 +108,7 @@
 
 <script>
 import { createNamespacedHelpers } from "vuex";
-import { Session } from "@/util";
-import Router from "@/router";
+import { Session, RouterName } from "@/util";
 
 const {
   mapState,
@@ -118,28 +117,12 @@ const {
   mapActions,
 } = createNamespacedHelpers("user");
 
-const pathNavMap = {
-  Notice: "1",
-  NoticeFriendReq: "1",
-  NoticeGroupJoinReq: "1",
-  NoticeGroupJoinInvite: "1",
-  NoticeSuccess: "1",
-  Message: "2",
-  Cantact: "3",
-  CantactFriend: "3",
-  CantactGroup: "3",
-  CantactSuccess: "3",
-  Find: "4",
-  FindUser: "4",
-  FindGroup: "4",
-};
-
 export default {
   computed: {
     ...mapGetters(["photoName"]),
     ...mapState(["userInfo"]),
     navDefaultKey: () => {
-      return pathNavMap[Router.history.current.name];
+      return RouterName.getNavKey();
     },
   },
   data() {

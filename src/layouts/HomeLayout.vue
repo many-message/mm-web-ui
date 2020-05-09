@@ -8,8 +8,8 @@
 </template>
 
 <script>
-import { createNamespacedHelpers } from "vuex";
-import { Session, IDLE } from "@/util";
+import { createNamespacedHelpers, mapActions } from "vuex";
+import { Session, MsgType } from "@/util";
 import Nav from "@/views/Nav.vue";
 
 const { mapState, mapMutations } = createNamespacedHelpers("socket");
@@ -36,6 +36,8 @@ export default {
     this.handleInitWebSocket();
     // 每2分钟发送一次
     this.timer = setInterval(() => this.handleIdle(), 1000 * 120);
+    // 查询聊条列表
+    this.getChats();
   },
   destroyed() {
     // 关闭webSocket连接
@@ -46,6 +48,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions("chat", ["getChats"]),
     ...mapMutations([
       "initWebSocket",
       "webSocketOnOpen",
@@ -75,7 +78,7 @@ export default {
     // 心跳包
     handleIdle() {
       this.sendMsg({
-        msgType: IDLE,
+        msgType: MsgType.IDLE,
         content: "PING-PONG",
       });
     },

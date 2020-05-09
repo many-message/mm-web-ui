@@ -11,7 +11,13 @@ const state = {
   groupJoinInviteInfo: {},
 };
 
-const getters = {};
+const getters = {
+  // 是否有通知
+  hasNotice: state =>
+    state.friendReqs.length > 0 ||
+    state.groupJoinReqs.length > 0 ||
+    state.groupJoinInvites.length > 0,
+};
 
 const actions = {
   /**

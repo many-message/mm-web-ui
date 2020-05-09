@@ -73,7 +73,7 @@
 
 <script>
 import { createNamespacedHelpers, mapMutations } from "vuex";
-import { sliceNickname, DEL_FRIEND_NOTICE } from "@/util";
+import { sliceNickname, MsgType } from "@/util";
 
 const { mapState, mapActions } = createNamespacedHelpers("friend");
 
@@ -183,12 +183,12 @@ export default {
         friendId: this.friendInfo.friendId,
         success: () => {
           this.sendMsg({
-            msgType: DEL_FRIEND_NOTICE,
+            msgType: MsgType.DEL_FRIEND_NOTICE,
             content: {
               recvUserId: this.friendInfo.userId,
             },
           });
-          this.$router.push("/home/cantact/success");
+          this.$router.push("/home/cantact");
         },
       });
     },

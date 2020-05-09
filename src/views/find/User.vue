@@ -55,7 +55,7 @@
 
 <script>
 import { mapState, mapActions, mapMutations } from "vuex";
-import { sliceNickname, FRIEND_REQ_NOTICE } from "@/util";
+import { sliceNickname, MsgType } from "@/util";
 
 export default {
   props: ["userId"],
@@ -120,7 +120,7 @@ export default {
           this.addFriendVisible = false;
           // websocket同步发送消息
           this.sendMsg({
-            msgType: FRIEND_REQ_NOTICE,
+            msgType: MsgType.FRIEND_REQ_NOTICE,
             content: {
               recvUserId: this.userInfo.userId,
             },

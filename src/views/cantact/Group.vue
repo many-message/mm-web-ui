@@ -244,12 +244,7 @@
 
 <script>
 import { createNamespacedHelpers, mapMutations } from "vuex";
-import {
-  sliceNickname,
-  DEL_GROUP_MEMBER_NOTICE,
-  DEL_GROUP_NOTICE,
-  INVITE_JOIN_GROUP_NOTICE,
-} from "@/util";
+import { sliceNickname, MsgType } from "@/util";
 
 const { mapState, mapActions, mapGetters } = createNamespacedHelpers("group");
 
@@ -420,7 +415,7 @@ export default {
         groupMemberId,
         success: () => {
           this.sendMsg({
-            msgType: DEL_GROUP_MEMBER_NOTICE,
+            msgType: MsgType.DEL_GROUP_MEMBER_NOTICE,
             content: {
               recvUserId: userId,
             },
@@ -433,7 +428,7 @@ export default {
       this.leaveGroup({
         groupId: this.groupId,
         success: () => {
-          this.$router.push("/home/cantact/success");
+          this.$router.push("/home/cantact");
         },
       });
     },
@@ -443,12 +438,12 @@ export default {
         groupId: this.groupId,
         success: () => {
           this.sendMsg({
-            msgType: DEL_GROUP_NOTICE,
+            msgType: MsgType.DEL_GROUP_NOTICE,
             content: {
               recvUserIds: this.userIds,
             },
           });
-          this.$router.push("/home/cantact/success");
+          this.$router.push("/home/cantact");
         },
       });
     },
@@ -478,7 +473,7 @@ export default {
           this.inviteJoinGroupVisible = false;
           // 同步发送消息
           this.sendMsg({
-            msgType: INVITE_JOIN_GROUP_NOTICE,
+            msgType: MsgType.INVITE_JOIN_GROUP_NOTICE,
             content: {
               inviteUserIds: this.joinUsers,
             },

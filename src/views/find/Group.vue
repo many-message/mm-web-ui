@@ -48,7 +48,7 @@
 
 <script>
 import { createNamespacedHelpers, mapMutations } from "vuex";
-import { sliceNickname, REQ_JOIN_GROUP_NOTICE } from "@/util";
+import { sliceNickname, MsgType } from "@/util";
 
 const { mapState, mapActions } = createNamespacedHelpers("find");
 
@@ -104,7 +104,7 @@ export default {
           this.joinGroupVisible = false;
           // 同步发送websocket消息
           this.sendMsg({
-            msgType: REQ_JOIN_GROUP_NOTICE,
+            msgType: MsgType.REQ_JOIN_GROUP_NOTICE,
             content: {
               recvUserIds: userIds,
             },

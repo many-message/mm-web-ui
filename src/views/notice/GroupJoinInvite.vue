@@ -87,7 +87,7 @@ export default {
       this.deleteGroupJoinInviteInfo({
         groupJoinInviteId: this.groupJoinInviteId,
         success: () => {
-          this.$router.push("/home/notice/success");
+          this.$router.push("/home/notice");
         },
       });
     },
@@ -95,7 +95,7 @@ export default {
       this.agreeGroupJoinInviteInfo({
         groupJoinInviteId: this.groupJoinInviteId,
         success: () => {
-          this.$router.push("/home/notice/success");
+          this.$router.push("/home/notice");
         },
       });
     },

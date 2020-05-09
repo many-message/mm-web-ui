@@ -2,7 +2,6 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
-import Result from "../components/Result";
 
 Vue.use(VueRouter);
 
@@ -65,18 +64,35 @@ const routes = [
               ),
             props: true,
           },
-          {
-            path: "/home/notice/success",
-            name: "NoticeSuccess",
-            component: Result,
-          },
         ],
       },
       {
         path: "/home/message",
         name: "Message",
         component: () =>
-          import(/* webpackChunkName: "home" */ "../views/message/Message.vue"),
+          import(
+            /* webpackChunkName: "message" */ "../views/message/Message.vue"
+          ),
+        children: [
+          {
+            path: "/home/message/user/:chatId",
+            name: "MessageUser",
+            component: () =>
+              import(
+                /* webpackChunkName: "message" */ "../views/message/UserMessage.vue"
+              ),
+            props: true,
+          },
+          {
+            path: "/home/message/group/:chatId",
+            name: "MessageGroup",
+            component: () =>
+              import(
+                /* webpackChunkName: "message" */ "../views/message/GroupMessage.vue"
+              ),
+            props: true,
+          },
+        ],
       },
       {
         path: "/home/cantact",
@@ -103,11 +119,6 @@ const routes = [
                 /* webpackChunkName: "cantact" */ "../views/cantact/Group.vue"
               ),
             props: true,
-          },
-          {
-            path: "/home/cantact/success",
-            name: "CantactSuccess",
-            component: Result,
           },
         ],
       },

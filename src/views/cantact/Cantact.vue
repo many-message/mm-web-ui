@@ -1,7 +1,7 @@
 <template>
   <a-layout>
     <a-layout-sider
-      width="250"
+      width="300"
       :style="{ background: '#FAFAFA', overflowY: 'scroll' }"
     >
       <a-tabs default-active-key="1">
@@ -350,7 +350,7 @@ export default {
 };
 </script>
 
-<style lang="less" scoped>
+<style lang="less">
 .cantact-font {
   font-size: 16px;
 }
@@ -374,5 +374,8 @@ export default {
 }
 .group-icon:hover {
   color: #303133;
+}
+.ant-tabs-nav {
+  margin-left: 25px;
 }
 </style>

@@ -99,7 +99,7 @@ export default {
       this.deleteGroupJoinReqInfo({
         groupJoinReqId: this.groupJoinReqId,
         success: () => {
-          this.$router.push("/home/notice/success");
+          this.$router.push("/home/notice");
         },
       });
     },
@@ -107,7 +107,7 @@ export default {
       this.agreeGroupJoinReqInfo({
         groupJoinReqId: this.groupJoinReqId,
         success: () => {
-          this.$router.push("/home/notice/success");
+          this.$router.push("/home/notice");
         },
       });
     },

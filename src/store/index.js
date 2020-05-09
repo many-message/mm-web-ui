@@ -6,6 +6,7 @@ import friend from "./moudles/friend";
 import find from "./moudles/find";
 import group from "./moudles/group";
 import notice from "./moudles/notice";
+import chat from "./moudles/chat";
 import socket from "./moudles/socket";
 
 Vue.use(Vuex);
@@ -18,6 +19,7 @@ export default new Vuex.Store({
     find,
     group,
     notice,
+    chat,
     socket,
   },
 });

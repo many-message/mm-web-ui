@@ -1,7 +1,7 @@
 <template>
   <a-layout>
     <a-layout-sider
-      width="250"
+      width="300"
       :style="{ background: '#FAFAFA', overflowY: 'scroll' }"
     >
       <a-menu :style="{ background: '#FAFAFA' }">

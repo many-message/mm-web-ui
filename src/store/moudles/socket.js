@@ -1,4 +1,4 @@
-import { Session, CONN } from "../../util";
+import { Session, MsgType } from "../../util";
 
 const state = {
   webSocket: null,
@@ -21,7 +21,7 @@ const mutations = {
     // 建立业务上的连接
     const conn = {
       sendUserId: Session.getUserInfo().userId,
-      msgType: CONN,
+      msgType: MsgType.CONN,
       content: "CONN",
     };
     state.webSocket.send(JSON.stringify(conn));

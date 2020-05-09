@@ -109,7 +109,7 @@ export default {
       this.deleteFriendReqInfo({
         friendReqId: this.friendReqId,
         success: () => {
-          this.$router.push("/home/notice/success");
+          this.$router.push("/home/notice");
         },
       });
     },
@@ -134,7 +134,7 @@ export default {
         success: () => {
           this.agreeFriendReqConfirmLoadding = false;
           this.agreeFriendReqVisible = false;
-          this.$router.push("/home/notice/success");
+          this.$router.push("/home/notice");
         },
         error: () => {
           this.agreeFriendReqConfirmLoadding = false;

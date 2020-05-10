@@ -1,20 +1,16 @@
+import { message } from "ant-design-vue";
 import { Request } from "../../util";
 
 const state = {
   // 聊天列表
   chats: [],
-  // chatId -> chat
-  chatIdMap: new Map(),
-  // friendUserId -> chatId
   userIdChatIdMap: new Map(),
-  // groupId -> chatId
   groupIdChatIdMap: new Map(),
+  // 当前聊天消息列表
+  currentChatMsgList: [],
 };
 
-const getters = {
-  // 是否有消息
-  hasMsg: state => state.chats.filter(chat => chat.hasMsg).length > 0,
-};
+const getters = {};
 
 const actions = {
   /**
@@ -25,20 +21,99 @@ const actions = {
   getChats({ commit }) {
     Request.get("/chats").then(data => commit("updateChats", data));
   },
+  getChat(content, payload) {
+    Request.get(`/chats/${payload.chatId}`).then(data => payload.success(data));
+  },
   /**
    * 添加一个好友聊天
    *
    * @param {*} { commit }
-   * @param {friendUserId, success} payload
+   * @param {userId, success} payload
    */
   addFriendChat({ commit }, payload) {
     Request.post("/chats", {
-      chatObjId: payload.friendUserId,
+      chatObjId: payload.userId,
       chatType: "1",
     }).then(data => {
-      commit("updateUserChat", data);
+      commit("updateChats", data.chats);
       payload.success(data.chatId);
     });
+  },
+  /**
+   * 签收消息
+   *
+   * @param {*} { commit }
+   * @param {userId, chatId, success} userId
+   */
+  recvMessage({ commit }, payload) {
+    Request.patch(`/messages/${payload.userId}`).then(() => {
+      commit("updateRecvMessage", payload.chatId);
+    });
+  },
+  /**
+   *添加一个群聊天
+   *
+   * @param {*} { commit }
+   * @param { groupId, success } payload
+   */
+  addGroupChat({ commit }, payload) {
+    Request.post("/chats", {
+      chatObjId: payload.groupId,
+      chatType: "2",
+    }).then(data => {
+      commit("updateChats", data.chats);
+      payload.success(data.chatId);
+    });
+  },
+  /**
+   * 删除一个聊天
+   *
+   * @param {*} { commit }
+   * @param {chatId, success} payload
+   */
+  deleteChat({ commit }, payload) {
+    Request.delete(`/chats/${payload.chatId}`).then(data => {
+      commit("updateChats", data);
+      message.success("删除成功！");
+    });
+  },
+  /**
+   * 查询消息
+   *
+   * @param {*} { commit }
+   * @param {userId, currentIndex, isAppend} payload
+   */
+  getMessages({ commit }, payload) {
+    Request.get(
+      `/${payload.userId}/messages?currentIndex=${payload.currentIndex}`,
+    ).then(data => {
+      if (payload.isAppend) {
+        commit("pushMessageList", data);
+      } else {
+        commit("updateMessageList", data);
+      }
+    });
+  },
+  getGroupMessages({ commit }, payload) {
+    Request.get(
+      `/groups/${payload.groupId}/messages?currentIndex=${payload.currentIndex}`,
+    ).then(data => {
+      if (payload.isAppend) {
+        commit("pushMessageList", data);
+      } else {
+        commit("updateMessageList", data);
+      }
+    });
+  },
+  getGroupMember(content, payload) {
+    Request.get(`/groups/${payload.groupId}/members-info`).then(data =>
+      payload.success(data),
+    );
+  },
+  getGroupMemberIds(content, payload) {
+    Request.get(`/groups/${payload.groupId}/members/user-ids`).then(data =>
+      payload.success(data),
+    );
   },
 };
 
@@ -52,14 +127,10 @@ const mutations = {
   updateChats(state, payload) {
     state.chats = payload;
 
-    const chatIdMap = new Map();
-    payload.forEach(chat => chatIdMap.set(chat.chatId, { ...chat }));
-    state.chatIdMap = chatIdMap;
-
     const userIdChatIdMap = new Map();
     payload
       .filter(chat => chat.chatType === "1")
-      .forEach(chat => userIdChatIdMap.set(chat.chatObjeId, chat.chatId));
+      .forEach(chat => userIdChatIdMap.set(chat.chatObjId, chat.chatId));
     state.userIdChatIdMap = userIdChatIdMap;
 
     const groupIdChatIdMap = new Map();
@@ -69,125 +140,31 @@ const mutations = {
     state.groupIdChatIdMap = groupIdChatIdMap;
   },
   /**
-   * 赋值刚刚添加的一个用户聊天列表
+   * 消息签收
    *
-   * @param {*} state
-   * @param {*} chat
    */
-  updateUserChat(state, chat) {
-    const newChats = [...state.chats];
-    newChats.unshift(chat);
-    state.chats = newChats;
-
-    const newChatIdMap = new Map([...state.chatIdMap]);
-    newChatIdMap.set(chat.chatId, { ...chat });
-    state.chatIdMap = newChatIdMap;
-
-    const newUserIdChatIdMap = new Map([...state.userIdChatIdMap]);
-    newUserIdChatIdMap.set(chat.chatObjeId, chat.chatId);
-    state.userIdChatIdMap = newUserIdChatIdMap;
-  },
-  /**
-   * 赋值一个群聊
-   *
-   * @param {*} state
-   * @param {*} chat
-   */
-  updateGroupChat(state, chat) {
-    const newChats = [...state.chats];
-    newChats.push(chat);
-    state.chats = newChats;
-
-    const newChatIdMap = new Map([...state.chatIdMap]);
-    newChatIdMap.set(chat.chatId, { ...chat });
-    state.chatIdMap = newChatIdMap;
-
-    const newGroupIdChatIdMap = new Map([...state.groupIdChatIdMap]);
-    newGroupIdChatIdMap.set(chat.chatObjId, chat.chatId);
-    state.groupIdChatIdMap = newGroupIdChatIdMap;
-  },
-  /**
-   * 接收私聊消息
-   *
-   * @param {*} state
-   * @param {sendUserId, msg, addition, createTime} payload
-   */
-  updateUserChatMsg(state, payload) {
-    const chatId = state.userIdChatIdMap.get(payload.sendUserId);
-
-    const newChat = { ...state.chatIdMap.get(chatId) };
-
-    const { ...rest } = payload;
-    const msg = {
-      ...rest,
-      nickname: newChat.chatName,
-      friendName: newChat.chatTitle,
-    };
-    newChat.messages.push(msg);
-    // TODO 判断 hasMsg 属性
-
-    const newChatIdMap = new Map([...state.chatIdMap]);
-    newChatIdMap.set(chatId, newChat);
-    state.chatIdMap = newChatIdMap;
-
-    const newChats = state.chats.map(item => {
+  updateRecvMessage(state, chatId) {
+    state.chats.map(item => {
       if (item.chatId === chatId) {
-        return { ...newChat };
+        item.hasMsg = false;
       }
       return item;
     });
-    state.chats = { ...newChats };
   },
   /**
-   * 自己发一条消息
+   * 添加一条消息
    *
    * @param {*} state
-   * @param {{sendUserId, nickname, friendName, msg, addition, createTime} as msg, chatId} payload
+   * @param {*} msg
    */
-  updateMeSendMsg(state, payload) {
-    const newChat = { ...state.chatIdMap.get(payload.chatId) };
-
-    newChat.messages.push(payload.msg);
-    const newChatIdMap = new Map([...state.chatIdMap]);
-
-    newChatIdMap.set(payload.chatId, newChat);
-    state.chatIdMap = newChatIdMap;
-
-    const newChats = state.chats.map(item => {
-      if (item.chatId === payload.chatId) {
-        return { ...newChat };
-      }
-      return item;
-    });
-    state.chats = { ...newChats };
+  pushChatMsg(state, msg) {
+    state.currentChatMsgList.push(msg);
   },
-  /**
-   * 接收一个群聊消息
-   *
-   * @param {*} state
-   * @param {
-   *  groupId, sendUserId, sendGroupMemberId,
-   *  groupMemberName, nickname, msg, addition,
-   *  createTime,
-   * } payload
-   */
-  updateGroupChatMsg(state, payload) {
-    const chatId = state.groupIdChatIdMap.get(payload.groupId);
-    const newChat = { ...state.chatIdMap.get(chatId) };
-    newChat.messages.push(payload);
-    // TODO 判断是否具备hasMsg
-
-    const newChatIdMap = new Map([...state.chatIdMap]);
-    newChatIdMap.set(chatId, newChat);
-    state.chatIdMap = newChatIdMap;
-
-    const newChats = state.chats.map(item => {
-      if (item.chatId === chatId) {
-        return { ...newChat };
-      }
-      return item;
-    });
-    state.chats = { ...newChats };
+  pushMessageList(state, messages) {
+    state.currentChatMsgList = [...messages, ...state.currentChatMsgList];
+  },
+  updateMessageList(state, messages) {
+    state.currentChatMsgList = messages;
   },
 };
 

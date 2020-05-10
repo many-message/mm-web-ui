@@ -98,7 +98,6 @@ export default {
     ]),
     ...mapActions("friend", ["getFriendGroups"]),
     handleGetFriendReqInfo() {
-      console.log(this.friendReqId);
       this.getFriendReqInfo(this.friendReqId);
     },
     sliceName(name) {

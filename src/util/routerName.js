@@ -30,3 +30,6 @@ export const getRouterName = () => {
 export const getParam = name => {
   return Router.history.current.params[name];
 };
+
+// 判断路由是否按指定
+export const startWithByName = name => getRouterName().startsWith(name);

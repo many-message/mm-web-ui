@@ -23,7 +23,13 @@
         </a-descriptions>
       </template>
       <template #extra>
-        <a-button v-if="groupInfo.join" type="primary">发送消息</a-button>
+        <a-button
+          v-if="groupInfo.join"
+          @click="handleSendMessage"
+          type="primary"
+        >
+          发送消息
+        </a-button>
         <a-button v-else @click="showJoinGroupModal" type="primary">
           加入群聊
         </a-button>
@@ -47,15 +53,14 @@
 </template>
 
 <script>
-import { createNamespacedHelpers, mapMutations } from "vuex";
+import { mapActions, mapMutations, mapState } from "vuex";
 import { sliceNickname, MsgType } from "@/util";
-
-const { mapState, mapActions } = createNamespacedHelpers("find");
 
 export default {
   props: ["groupId"],
   computed: {
-    ...mapState(["groupInfo"]),
+    ...mapState("find", ["groupInfo"]),
+    ...mapState("user", ["userInfo"]),
   },
   watch: {
     // 监听路由变化
@@ -69,7 +74,8 @@ export default {
     };
   },
   methods: {
-    ...mapActions(["getGroup", "sendJoinGroupReq"]),
+    ...mapActions("find", ["getGroup", "sendJoinGroupReq"]),
+    ...mapActions("chat", ["addGroupChat"]),
     ...mapMutations("socket", ["sendMsg"]),
     handleGetGroupInfo() {
       this.getGroup(this.groupId);
@@ -107,6 +113,8 @@ export default {
             msgType: MsgType.REQ_JOIN_GROUP_NOTICE,
             content: {
               recvUserIds: userIds,
+              nickname: this.userInfo.nickname,
+              groupName: this.groupInfo.groupName,
             },
           });
           this.$message.success("请求已发送！");
@@ -118,6 +126,14 @@ export default {
     },
     handleJoinGroupCancel() {
       this.joinGroupVisible = false;
+    },
+    handleSendMessage() {
+      this.addGroupChat({
+        groupId: this.groupId,
+        success: chatId => {
+          this.$router.push("/home/message/group/" + chatId);
+        },
+      });
     },
   },
   mounted() {

@@ -23,7 +23,7 @@
         </a-descriptions>
       </template>
       <template #extra>
-        <a-button type="primary">发送消息</a-button>
+        <a-button @click="handleSendMessage" type="primary">发送消息</a-button>
         <a-button
           v-if="groupInfo.myGroupMemberType !== '3'"
           @click="showEditGroupModal"
@@ -243,10 +243,15 @@
 </template>
 
 <script>
-import { createNamespacedHelpers, mapMutations } from "vuex";
+import {
+  createNamespacedHelpers,
+  mapActions,
+  mapMutations,
+  mapState,
+} from "vuex";
 import { sliceNickname, MsgType } from "@/util";
 
-const { mapState, mapActions, mapGetters } = createNamespacedHelpers("group");
+const { mapGetters } = createNamespacedHelpers("group");
 
 const columns = [
   {
@@ -298,7 +303,8 @@ export default {
     };
   },
   computed: {
-    ...mapState(["groupInfo"]),
+    ...mapState("group", ["groupInfo"]),
+    ...mapState("user", ["userInfo"]),
     ...mapGetters(["userIds", "joinGroupUsers"]),
   },
   watch: {
@@ -306,7 +312,7 @@ export default {
     $route: "handleGetGroupInfo",
   },
   methods: {
-    ...mapActions([
+    ...mapActions("group", [
       "getGroup",
       "editGroup",
       "updateGroupMemberType",
@@ -317,6 +323,8 @@ export default {
       "getInviteJoinGroupUsers",
       "inviteJoinGroup",
     ]),
+    ...mapActions("chat", ["addGroupChat"]),
+    ...mapActions("cantact", ["getGroups"]),
     ...mapMutations("socket", ["sendMsg"]),
     handleGetGroupInfo() {
       this.getGroup(this.groupId);
@@ -360,6 +368,7 @@ export default {
         success: () => {
           this.editGroupConfirmLoadding = false;
           this.editGroupVisible = false;
+          this.getGroups();
         },
         error: () => {
           this.editGroupConfirmLoadding = false;
@@ -418,6 +427,9 @@ export default {
             msgType: MsgType.DEL_GROUP_MEMBER_NOTICE,
             content: {
               recvUserId: userId,
+              groupId: this.groupId,
+              nickname: this.userInfo.nickname,
+              groupName: this.groupInfo.groupName,
             },
           });
         },
@@ -441,6 +453,9 @@ export default {
             msgType: MsgType.DEL_GROUP_NOTICE,
             content: {
               recvUserIds: this.userIds,
+              groupId: this.groupId,
+              nickname: this.userInfo.nickname,
+              groupName: this.groupInfo.groupName,
             },
           });
           this.$router.push("/home/cantact");
@@ -476,6 +491,8 @@ export default {
             msgType: MsgType.INVITE_JOIN_GROUP_NOTICE,
             content: {
               inviteUserIds: this.joinUsers,
+              nickname: this.userInfo.nickname,
+              groupName: this.groupInfo.groupName,
             },
           });
         },
@@ -486,6 +503,14 @@ export default {
     },
     handleInviteJoinGroupCancel() {
       this.inviteJoinGroupVisible = false;
+    },
+    handleSendMessage() {
+      this.addGroupChat({
+        groupId: this.groupId,
+        success: chatId => {
+          this.$router.push("/home/message/group/" + chatId);
+        },
+      });
     },
   },
   mounted() {

@@ -23,7 +23,7 @@
         </a-descriptions>
       </template>
       <template #extra>
-        <a-button type="primary">发送消息</a-button>
+        <a-button @click="handleSendMessage" type="primary">发送消息</a-button>
         <a-button @click="showMoveFriendGroupModal">移动分组</a-button>
         <a-button @click="showUpdateFriendName">修改备注</a-button>
         <a-popconfirm
@@ -72,10 +72,8 @@
 </template>
 
 <script>
-import { createNamespacedHelpers, mapMutations } from "vuex";
+import { mapActions, mapMutations, mapState } from "vuex";
 import { sliceNickname, MsgType } from "@/util";
-
-const { mapState, mapActions } = createNamespacedHelpers("friend");
 
 export default {
   props: ["friendId"],
@@ -96,16 +94,18 @@ export default {
     $route: "handleGetFriendInfo",
   },
   computed: {
-    ...mapState(["friendInfo", "friendGroups"]),
+    ...mapState("friend", ["friendInfo", "friendGroups"]),
+    ...mapState("user", ["userInfo"]),
   },
   methods: {
-    ...mapActions([
+    ...mapActions("friend", [
       "getFriend",
       "updateFriendName",
       "getFriendGroups",
       "moveFriendGroup",
       "deleteFriend",
     ]),
+    ...mapActions("chat", ["addFriendChat"]),
     ...mapMutations("socket", ["sendMsg"]),
     handleGetFriendInfo() {
       this.getFriend(this.friendId);
@@ -186,10 +186,17 @@ export default {
             msgType: MsgType.DEL_FRIEND_NOTICE,
             content: {
               recvUserId: this.friendInfo.userId,
+              nickname: this.userInfo.nickname,
             },
           });
           this.$router.push("/home/cantact");
         },
+      });
+    },
+    handleSendMessage() {
+      this.addFriendChat({
+        userId: this.friendInfo.userId,
+        success: chatId => this.$router.push("/home/message/user/" + chatId),
       });
     },
   },

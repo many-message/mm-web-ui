@@ -25,15 +25,24 @@
             >
               {{ chat.chatTitle }}
             </router-link>
-            <a-avatar class="photo" slot="avatar">{{
-              sliceName(chat.chatName)
-            }}</a-avatar>
+            <template slot="avatar">
+              <a-badge dot :count="chat.hasMsg ? 1 : 0">
+                <a-avatar class="photo">{{
+                  sliceName(chat.chatName)
+                }}</a-avatar>
+              </a-badge>
+            </template>
           </a-list-item-meta>
-          <a-icon class="del" type="close" />
+          <a-icon
+            @click="handleDeleteChat(chat.chatId)"
+            class="del"
+            type="close"
+          />
         </a-list-item>
       </a-list>
     </a-layout-sider>
-    <a-layout-content :style="{ padding: '24px 24px', minHeight: '280px' }">
+    <a-layout-content :style="{ padding: '12px 12px', paddingRight: '24px' }">
+      <router-view />
     </a-layout-content>
   </a-layout>
 </template>
@@ -49,10 +58,18 @@ export default {
     ...mapState(["chats"]),
   },
   methods: {
-    ...mapActions([]),
+    ...mapActions(["getChats", "deleteChat"]),
     sliceName(name) {
       return sliceNickname(name);
     },
+    handleDeleteChat(chatId) {
+      this.deleteChat({
+        chatId,
+      });
+    },
+  },
+  mounted() {
+    this.getChats();
   },
 };
 </script>

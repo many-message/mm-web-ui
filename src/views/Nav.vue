@@ -1,13 +1,11 @@
 <template>
   <a-layout-sider :trigger="null" collapsed>
     <a-avatar @click="showDrawer" class="photo">{{ photoName }}</a-avatar>
-    <a-menu theme="dark" mode="inline" :defaultSelectedKeys="[navDefaultKey]">
+    <a-menu theme="dark" mode="inline" :selectedKeys="[navKey]">
       <a-menu-item key="1">
         <router-link to="/home/notice">
-          <a-badge dot :offset="[0, 10]">
-            <a-icon type="notification" />
-            <span>通知</span>
-          </a-badge>
+          <a-icon type="notification" />
+          <span>通知</span>
         </router-link>
       </a-menu-item>
       <a-menu-item key="2">
@@ -121,12 +119,14 @@ export default {
   computed: {
     ...mapGetters(["photoName"]),
     ...mapState(["userInfo"]),
-    navDefaultKey: () => {
-      return RouterName.getNavKey();
-    },
+  },
+  watch: {
+    // 监听路由变化
+    $route: "handleNavKey",
   },
   data() {
     return {
+      navKey: RouterName.getNavKey(),
       // 抽屉
       drawerVisible: false,
       // 修改信息
@@ -148,6 +148,9 @@ export default {
   methods: {
     ...mapActions(["updateUserInfo", "updatePwd"]),
     ...mapMutations(["loadUserInfo"]),
+    handleNavKey() {
+      this.navKey = RouterName.getNavKey();
+    },
     showDrawer() {
       this.drawerVisible = true;
     },

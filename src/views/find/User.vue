@@ -20,7 +20,13 @@
         </a-descriptions>
       </template>
       <template #extra>
-        <a-button v-if="userInfo.friend" type="primary">发送消息</a-button>
+        <a-button
+          v-if="userInfo.friend"
+          @click="handleSendMessage"
+          type="primary"
+        >
+          发送消息
+        </a-button>
         <a-button v-else @click="showAddFriendModal" type="primary">
           添加好友
         </a-button>
@@ -61,6 +67,9 @@ export default {
   props: ["userId"],
   computed: {
     ...mapState("find", ["userInfo"]),
+    ...mapState("user", {
+      myUserInfo: "userInfo",
+    }),
     ...mapState("friend", ["friendGroups"]),
   },
   watch: {
@@ -78,6 +87,7 @@ export default {
   methods: {
     ...mapActions("find", ["getUser", "sendFriendReq"]),
     ...mapActions("friend", ["getFriendGroups"]),
+    ...mapActions("chat", ["addFriendChat"]),
     ...mapMutations("socket", ["sendMsg"]),
     handleGetUserInfo() {
       this.getUser(this.userId);
@@ -123,6 +133,7 @@ export default {
             msgType: MsgType.FRIEND_REQ_NOTICE,
             content: {
               recvUserId: this.userInfo.userId,
+              nickname: this.myUserInfo.nickname,
             },
           });
           this.$message.success("请求已发送！");
@@ -134,6 +145,12 @@ export default {
     },
     handleAddFriendCancel() {
       this.addFriendVisible = false;
+    },
+    handleSendMessage() {
+      this.addFriendChat({
+        userId: this.userId,
+        success: chatId => this.$router.push("/home/message/user/" + chatId),
+      });
     },
   },
   mounted() {

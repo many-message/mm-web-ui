@@ -30,6 +30,7 @@ import {
   Popconfirm,
   Transfer,
   Tooltip,
+  notification,
   Badge,
 } from "ant-design-vue";
 
@@ -62,6 +63,7 @@ Vue.use(Tooltip);
 Vue.use(Badge);
 
 Vue.prototype.$message = message;
+Vue.prototype.$notification = notification;
 
 Vue.config.productionTip = false;
 

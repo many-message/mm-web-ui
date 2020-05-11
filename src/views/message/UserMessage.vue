@@ -27,12 +27,31 @@
           sliceName(userInfo.nickname)
         }}</a-avatar>
         <div :class="{ 'div-left': msg.msgContent.length > 20 }">
-          {{ msg.msgContent }}
+          <img
+            v-if="msg.msgAddition"
+            :src="getMsgAdditionInfo(msg.msgAddition).smallUrl"
+            @click="showPreviewImg(msg.msgAddition)"
+          />
+          <span v-else>
+            {{ msg.msgContent }}
+          </span>
         </div>
       </div>
     </div>
     <template slot="actions">
       <div>
+        <a-upload
+          name="file"
+          accept="image/*"
+          :action="uploadImgUrl"
+          :headers="{ 'X-User-Access-Token': token }"
+          :showUploadList="false"
+          :disabled="uploadImgDisabled"
+          @change="handleSendImgChange"
+          :style="{ float: 'left', marginLeft: '10px' }"
+        >
+          <a-button> <a-icon type="upload" />发送图片</a-button>
+        </a-upload>
         <a-button
           @click="handleSendMsg"
           type="primary"
@@ -53,12 +72,21 @@
         />
       </div>
     </template>
+    <a-modal
+      v-model="imgPreviewVisible"
+      :footer="null"
+      :centered="true"
+      :bodyStyle="{}"
+      width=""
+    >
+      <img :src="imgPreviewUrl" />
+    </a-modal>
   </a-card>
 </template>
 
 <script>
 import { mapState, mapActions, mapMutations } from "vuex";
-import { sliceNickname, MsgType, getCurrentDate } from "@/util";
+import { sliceNickname, MsgType, getCurrentDate, Config } from "@/util";
 
 export default {
   props: ["chatId"],
@@ -66,15 +94,21 @@ export default {
     return {
       chatInfo: {},
       msg: null,
+      uploadImgUrl: Config.baseUrl + "/images",
+      imgInfo: {},
+      uploadImgDisabled: false,
+      imgPreviewVisible: false,
+      imgPreviewUrl: null,
     };
   },
   computed: {
     ...mapState("chat", ["currentChatMsgList"]),
-    ...mapState("user", ["userInfo"]),
+    ...mapState("user", ["userInfo", "token"]),
   },
   watch: {
     // 监听路由变化
     $route: "handleGetChatInfo",
+    imgInfo: "handleSendImg",
   },
   updated() {
     this.handleScrollToBottom();
@@ -110,10 +144,17 @@ export default {
     sliceName(name) {
       return sliceNickname(name);
     },
+    getMsgAdditionInfo(msgAddition) {
+      return JSON.parse(msgAddition);
+    },
     handleChangeMsg() {
       if (this.msg) {
         this.msg = this.msg.trim();
       }
+    },
+    showPreviewImg(msgAddition) {
+      this.imgPreviewUrl = JSON.parse(msgAddition).url;
+      this.imgPreviewVisible = true;
     },
     handleSendMsg() {
       if (this.msg) {
@@ -134,6 +175,46 @@ export default {
           createTime: getCurrentDate(),
         });
         this.msg = null;
+      }
+    },
+    // 处理发送图片
+    handleSendImgChange(info) {
+      if (info.file.status !== "uploading") {
+        this.uploadImgDisabled = true;
+      }
+      if (info.file.status === "done") {
+        this.uploadImgDisabled = false;
+        const resp = info.file.response;
+        if (["200"].includes(resp.code)) {
+          this.imgInfo = resp.data;
+          this.$message.success("发送成功！");
+        } else {
+          this.$message.error(resp.message);
+        }
+      } else if (info.file.status === "error") {
+        this.uploadImgDisabled = false;
+        this.$message.error("网络繁忙，发送文件失败，请稍后再试！");
+      }
+    },
+    handleSendImg() {
+      if (this.imgInfo && Object.keys(this.imgInfo).length > 0) {
+        this.sendMsg({
+          msgType: MsgType.PRIVATE_CHAT,
+          content: {
+            recvUserId: this.chatInfo.chatObjId,
+            msgContent: "",
+            msgAddition: JSON.stringify(this.imgInfo),
+          },
+        });
+        this.pushChatMsg({
+          sendUserId: this.userInfo.userId,
+          nickname: this.userInfo.nickname,
+          friendName: this.userInfo.nickname,
+          msgContent: "",
+          msgAddition: JSON.stringify(this.imgInfo),
+          createTime: getCurrentDate(),
+        });
+        this.imgInfo = {};
       }
     },
   },

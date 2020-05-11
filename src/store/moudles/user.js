@@ -4,6 +4,7 @@ import { message } from "ant-design-vue";
 
 const state = {
   userInfo: {},
+  token: null,
 };
 
 const getters = {
@@ -107,6 +108,7 @@ const mutations = {
   },
   loadUserInfo(state) {
     state.userInfo = Session.getUserInfo();
+    state.token = Session.getToken();
   },
 };
 

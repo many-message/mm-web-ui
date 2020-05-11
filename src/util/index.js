@@ -3,8 +3,9 @@ import Request from "./request";
 import Session from "./session";
 import * as MsgType from "./msgType";
 import * as RouterName from "./routerName";
+import * as Config from "./config";
 
-export { Encrypt, Request, Session, MsgType, RouterName };
+export { Encrypt, Request, Session, MsgType, RouterName, Config };
 
 // 截取昵称的前两位
 export const sliceNickname = nickname => {

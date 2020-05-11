@@ -32,6 +32,7 @@ import {
   Tooltip,
   notification,
   Badge,
+  Upload,
 } from "ant-design-vue";
 
 Vue.use(Layout);
@@ -61,6 +62,7 @@ Vue.use(Popconfirm);
 Vue.use(Transfer);
 Vue.use(Tooltip);
 Vue.use(Badge);
+Vue.use(Upload);
 
 Vue.prototype.$message = message;
 Vue.prototype.$notification = notification;

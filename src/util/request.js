@@ -2,11 +2,9 @@ import Axios from "axios";
 import router from "../router";
 import { message } from "ant-design-vue";
 import Session from "./session";
+import { baseUrl } from "./config";
 
 const messageTip = message;
-
-const baseUrl = "http://localhost:9494/api";
-// const baseUrl = "http://94.191.66.92:8080/api";
 
 // 请求实例
 const instance = Axios.create({
